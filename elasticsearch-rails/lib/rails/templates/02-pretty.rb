@@ -24,7 +24,7 @@ puts
 say_status  "Rubygems", "Adding Rails logger integration...\n", :yellow
 puts        '-'*80, ''; sleep 0.25
 
-insert_into_file 'config/application.rb',
+file 'config/application.rb',
                  "\n\nrequire 'elasticsearch/rails/instrumentation'",
                  after: /Bundler\.require.+$/
 
@@ -80,7 +80,7 @@ file 'app/models/article.rb', <<-CODE, after: 'include Elasticsearch::Model::Cal
 CODE
 
 run "rm -f #{Rails::VERSION::STRING > '4' ? 'test/models' : 'test/unit' }/article_test.rb"
-insert_into_file "#{Rails::VERSION::STRING > '4' ? 'test/models' : 'test/unit' }/article_test.rb", <<-CODE, after: /class ArticleTest < ActiveSupport::TestCase$/
+file "#{Rails::VERSION::STRING > '4' ? 'test/models' : 'test/unit' }/article_test.rb", <<-CODE, after: /class ArticleTest < ActiveSupport::TestCase$/
   teardown do
     Article.__elasticsearch__.unstub(:search)
   end
@@ -112,7 +112,7 @@ gsub_file 'app/views/layouts/application.html.erb', %r{<%= yield %>}, <<-CODE un
 </div>
 CODE
 
-insert_into_file 'app/views/layouts/application.html.erb', <<-CODE, before: '</head>'
+file 'app/views/layouts/application.html.erb', <<-CODE, before: '</head>'
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
   <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
 CODE
@@ -205,7 +205,7 @@ gsub_file 'app/controllers/articles_controller.rb', %r{@articles = Article.searc
   "@articles = Article.search(params[:q]).page(params[:page]).records"
 end
 
-insert_into_file 'app/views/articles/index.html.erb', after: '</table>' do
+file 'app/views/articles/index.html.erb', after: '</table>' do
   <<-CODE.gsub(/^  /, '')
   <div class="text-center">
     <%= paginate @articles %>
