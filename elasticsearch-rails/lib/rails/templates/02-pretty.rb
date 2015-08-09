@@ -39,7 +39,7 @@ puts        '-'*80, ''; sleep 0.25
 
 # NOTE: Kaminari has to be loaded before Elasticsearch::Model so the callbacks are executed
 #
-insert_into_file 'Gemfile', <<-CODE, before: /gem ["']elasticsearch["'].+$/
+file 'Gemfile', <<-CODE, before: /gem ["']elasticsearch["'].+$/
 # NOTE: Kaminari has to be loaded before Elasticsearch::Model so the callbacks are executed
 gem 'kaminari'
 CODE
@@ -79,6 +79,7 @@ file 'app/models/article.rb', <<-CODE, after: 'include Elasticsearch::Model::Cal
   end
 CODE
 
+run "rm -f #{Rails::VERSION::STRING > '4' ? 'test/models' : 'test/unit' }/article_test.rb"
 insert_into_file "#{Rails::VERSION::STRING > '4' ? 'test/models' : 'test/unit' }/article_test.rb", <<-CODE, after: /class ArticleTest < ActiveSupport::TestCase$/
   teardown do
     Article.__elasticsearch__.unstub(:search)
@@ -124,6 +125,7 @@ puts
 say_status  "Bootstrap", "Customizing the index page...\n", :yellow
 puts        '-'*80, ''; sleep 0.5
 
+run "rm -f app/views/articles/index.html.erb"
 gsub_file 'app/views/articles/index.html.erb', %r{<%= label_tag .* :search %>}m do |match|
 <<-CODE
 <div class="input-group">
@@ -194,7 +196,7 @@ end
 git commit: "-a -m 'Added highlighting for matches'"
 
 # ----- Paginate the results ----------------------------------------------------------------------
-
+run "rm -f app/controllers/articles_controller.rb"
 gsub_file 'app/controllers/articles_controller.rb', %r{@articles = Article.all} do |match|
   "@articles = Article.page(params[:page])"
 end
@@ -211,7 +213,7 @@ insert_into_file 'app/views/articles/index.html.erb', after: '</table>' do
   CODE
 end
 
-generate "kaminari:views", "bootstrap2", "--force"
+run "bundle exec rails g kaminari:views bootstrap2 --force"
 
 gsub_file 'app/views/kaminari/_paginator.html.erb', %r{<ul>}, '<ul class="pagination">'
 
